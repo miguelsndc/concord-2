@@ -3,6 +3,7 @@ import http from 'http'
 import { Server } from 'socket.io'
 import { connect } from 'mongoose'
 import { Message as MessageModel } from './models/message'
+import cors from 'cors'
 
 let app = express()
 let server = http.createServer(app)
@@ -46,9 +47,19 @@ io.on('connection', socket => {
 })
 
 app.use(express.json())
+app.use(cors())
 
 app.get('/', (req, res) => {
   res.json('All right bro')
+})
+
+app.get('/messages', (req, res) => {
+  let query = MessageModel.find()
+
+  query.then(value => {
+    console.log(value)
+    res.json(value)
+  })
 })
 
 server.listen(3000, () => {
