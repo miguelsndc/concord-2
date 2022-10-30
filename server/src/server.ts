@@ -14,6 +14,7 @@ type Message = {
   id: number
   content: string
   author: {
+    id: string
     name: string
     photoUrl: string
   }
