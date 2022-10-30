@@ -21,7 +21,7 @@ type Message = {
 }
 
 connect(
-  'mongodb+srv://EL_ADM:AQMsnI01RsYwgiUX@cluster0.hvpob.mongodb.net/?retryWrites=true&w=majority'
+  process.env.DATABASE_URL
 ).then(
   () => {
     console.log('connected')
