@@ -1,3 +1,4 @@
+require('dotenv').config()
 import express from 'express'
 import http from 'http'
 import { Server } from 'socket.io'
@@ -21,9 +22,7 @@ type Message = {
   }
 }
 
-connect(
-  process.env.DATABASE_URL
-).then(
+connect(process.env.DATABASE_URL!).then(
   () => {
     console.log('connected')
   },
