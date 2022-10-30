@@ -1,4 +1,4 @@
-import { FormEvent, useContext, useEffect, useRef, useState } from 'react'
+import { FormEvent, useEffect, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 import { io, Socket } from 'socket.io-client'
 import { useUser } from './UserContext'
@@ -10,11 +10,13 @@ type Message = {
     name: string
     photoUrl: string
   }
-  createdAt: Date
+  createdAt: string
 }
 
 function connectChatServer() {
-  let socket = io('http://localhost:3000/')
+  let socket = io('http://localhost:3000/', {
+    transports: ['websocket'],
+  })
 
   socket.onAny((type, message) => console.log(type, message))
 
@@ -28,7 +30,7 @@ export function Chat() {
   let socketRef = useRef<Socket>()
   let { user } = useUser()
 
-  function scrollToNewMessage() {
+  function scrollToLastMessage() {
     let newMessage = messageListRef.current?.lastElementChild
 
     newMessage?.scrollIntoView({
@@ -66,12 +68,24 @@ export function Chat() {
       flushSync(() => {
         setMessages(messages => messages.concat(message))
       })
-      scrollToNewMessage()
+      scrollToLastMessage()
     })
 
     return () => {
       socket.disconnect()
     }
+  }, [])
+
+  useEffect(() => {
+    async function getMessages() {
+      let response = await fetch('http://localhost:3000/messages')
+      let messages = await response.json()
+
+      setMessages(messages)
+      scrollToLastMessage()
+    }
+
+    getMessages()
   }, [])
 
   return (
