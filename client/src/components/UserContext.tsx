@@ -1,10 +1,14 @@
 import { createContext, ReactNode, useContext, useState } from 'react'
 
-type UserContextValue = {
-  url: string
-  setUrl: (url: string) => void
-  setName: (name: string) => void
+type User = {
   name: string
+  photoUrl: string
+  id: string
+}
+
+type UserContextValue = {
+  user: User
+  setUser: (user: User) => void
 }
 
 const UserContext = createContext({} as UserContextValue)
@@ -14,20 +18,17 @@ export function useUser() {
 }
 
 export function UserProvider({ children }: { children: ReactNode }) {
-  const [name, setName] = useState(
-    () => `User-${Math.ceil(Math.random() * 100)}`
-  )
-  const [url, setUrl] = useState(
-    'https://media.tenor.com/DuThn51FjPcAAAAC/nerd-emoji-nerd.gif'
-  )
+  const [user, setUser] = useState<User>({
+    name: `User-${Math.ceil(Math.random() * 100)}`,
+    photoUrl: 'https://media.tenor.com/DuThn51FjPcAAAAC/nerd-emoji-nerd.gif',
+    id: `${Math.random() ** 2}-${Math.random() ** 2}`,
+  })
 
   return (
     <UserContext.Provider
       value={{
-        url,
-        setUrl,
-        name,
-        setName,
+        user,
+        setUser,
       }}
     >
       {children}

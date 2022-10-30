@@ -4,13 +4,13 @@ import { io, Socket } from 'socket.io-client'
 import { useUser } from './UserContext'
 
 type Message = {
-  id: number
-  content: string
+  _id: number
+  body: string
   author: {
     name: string
     photoUrl: string
   }
-  sentAt: Date
+  createdAt: Date
 }
 
 function connectChatServer() {
@@ -26,7 +26,7 @@ export function Chat() {
   let [messages, setMessages] = useState<Message[]>([])
   let messageListRef = useRef<HTMLUListElement | null>(null)
   let socketRef = useRef<Socket>()
-  let { name, url } = useUser()
+  let { user } = useUser()
 
   function scrollToNewMessage() {
     let newMessage = messageListRef.current?.lastElementChild
@@ -42,17 +42,17 @@ export function Chat() {
     ev.preventDefault()
 
     if (!socketRef.current) throw new Error('wtf just happened')
+    if (text.trim() === '') return
 
     let socket = socketRef.current
-    let content = text.trim()
+    let body = text.trim()
 
     socket.emit('new-message', {
-      content,
+      body,
       author: {
-        name,
-        photoUrl: url,
+        name: user.name,
+        photoUrl: user.photoUrl,
       },
-      sentAt: new Date(),
     })
 
     setText('')
@@ -81,21 +81,23 @@ export function Chat() {
       </header>
       <ul
         ref={messageListRef}
-        className='flex-1 overflow-y-auto flex flex-col gap-10 p-4'
+        className='flex-1 overflow-y-auto flex flex-col gap-10 p-4 scrollbar'
       >
-        {messages.map(message => (
-          <li key={message.id} className='flex items-start gap-4'>
-            <img
-              className='w-16 h-16 object-cover rounded-full bg-gray-900'
-              src={message.author.photoUrl}
-              alt=''
-            />
-            <div>
-              <strong className='text-lg'>{message.author.name}</strong>
-              <p className=''>{message.content}</p>
-            </div>
-          </li>
-        ))}
+        {messages.map(message => {
+          return (
+            <li key={message._id} className='flex items-start gap-4'>
+              <img
+                className='w-16 h-16 object-cover rounded-full bg-gray-900'
+                src={message.author.photoUrl}
+                alt=''
+              />
+              <div>
+                <strong className='text-lg'>{message.author.name}</strong>
+                <p className=''>{message.body}</p>
+              </div>
+            </li>
+          )
+        })}
       </ul>
       <footer className='p-4'>
         <form onSubmit={handleSendMessage}>
