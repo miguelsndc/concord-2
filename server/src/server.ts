@@ -1,6 +1,8 @@
 import express from 'express'
 import http from 'http'
 import { Server } from 'socket.io'
+import { connect } from 'mongoose'
+import { Message as MessageModel } from './models/message'
 
 let app = express()
 let server = http.createServer(app)
@@ -11,31 +13,35 @@ let io = new Server(server, {
 })
 
 type Message = {
-  id: number
-  content: string
+  body: string
   author: {
-    id: string
     name: string
     photoUrl: string
   }
-  sentAt: Date
 }
 
-let messages: Message[] = []
-let id = 0
+connect(
+  'mongodb+srv://EL_ADM:AQMsnI01RsYwgiUX@cluster0.hvpob.mongodb.net/?retryWrites=true&w=majority'
+).then(
+  () => {
+    console.log('connected')
+  },
+  error => {
+    console.log(error)
+  }
+)
 
 io.on('connection', socket => {
   console.log(`A user connected at socket ${socket.id}`)
-  socket.on('new-message', (message: Omit<Message, 'id'>) => {
-    let newLength = messages.push({
-      id: id++,
-      ...message,
-      author: {
-        ...message.author,
-      },
+  socket.on('new-message', (msg: Message) => {
+    let message = new MessageModel({
+      body: msg.body,
+      author: msg.author,
     })
 
-    io.emit('new-message', messages[newLength - 1])
+    message.save().then(value => {
+      io.emit('new-message', value)
+    })
   })
 })
 
